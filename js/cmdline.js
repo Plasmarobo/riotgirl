@@ -70,6 +70,26 @@ function insertAtCursor(text)
   cursor.before(text);
 };
 
+function addNamedContent(name, content)
+{
+  var node = $('<span id="' + name + '"></span>');
+  node.html(content);
+  cursor.before(node);
+};
+
+function setNamedContent(name, content)
+{
+  var field = $('#' + name);
+  if (field.length)
+  {
+    field.html(content);
+  }
+  else
+  {
+    addNamedContent(name, content);
+  }
+};
+
 function writeLine(msg, rate)
 {
   //If the mutex is locked
@@ -91,6 +111,21 @@ function writeNewline()
     cursor.before($('<br></br>'));
   };
   enqueueWriteEvent(callback, 0);
+};
+
+function writeField(name, content, rate)
+{
+  for(i = 0; i < content.length; ++i)
+  {
+    updateField(name, content.substr(0,i+1), rate);
+  }
+};
+
+function updateField(name, content, rate)
+{
+  pushEvent({content: content, duration: rate, callback: function(content){
+    setNamedContent(name, content);
+  }});
 };
 
 function clearChildren(index, element, rate, remove_parent, eventList)
@@ -176,10 +211,6 @@ function blinkCursor(on, rate)
   }
 };
 
-
-
-
-
 $(document).ready(function(){
   stdout = $('.content');
   cursor = $('<div class="cursor"></div>');
@@ -187,20 +218,45 @@ $(document).ready(function(){
   blinkCursor(true, cursorBlinkRate);
   setTimeout(function(){
     writeLine("Checking Memory", 100);
-    writeLine("...", 750);
-    writeLine("Done", 100);
     writeNewline();
-    writeLine("Booting OS", 100);
-    writeLine("...", 750);
-    writeLine("Done", 100);
+    for (var y = 0; y < 8; ++y)
+    {
+      writeLine("Block "+y+" ", 50);
+      writeField("Memblock" + y, "0x00", 50);
+      writeLine("/0xFF", 50);
+      writeNewline();
+    }
+    for(var y = 0; y < 8; ++y)
+    {
+      for(var i = 15; i < 256; i += 16)
+      {
+        updateField("Memblock"+y, "0x" + i.toString(16), 10);
+      }
+    }
     writeNewline();
-    writeLine("Transfering Control", 100);
+    writeLine("OK", 100);
+    clearConsole(10);
+    writeLine("Booting OS:", 100);
+    writeLine(" . . . ", 750);
     writeNewline();
+    $.each([
+      "kernel.exe", 
+      "inproc.exe", 
+      "logon.exe", 
+      "Setup USERENV", 
+      "net.exe"
+      ], function(i, txt){
+      writeLine(txt, 100);
+      writeLine(" . . . ", 250);
+      writeLine("OK", 100);
+      writeNewline();
+    });
     enqueueWriteDelay(1000);
     clearConsole(10);
     enqueueWriteDelay(1000);
-    writeHeading("Welcome to CmdOS", 200);
+    writeHeading("Welcome to CmdOS", 10);
     writeNewline();
     writeLine(">", 100);
+    startOS();
   }, 500);
 });

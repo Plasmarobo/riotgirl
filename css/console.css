@@ -1,7 +1,9 @@
 .cursor
 {
+  padding: 0;
+  margin: 0;
   min-width:0.5em;
-  min-height:1em;
+  min-height:0.7em;
   background-color: #009900;
   display: inline-block;
 }
@@ -9,6 +11,6 @@
 .blink
 {
   min-width:0.5em;
-  min-height:1em;
+  min-height:0.7em;
   background-color: #003300;
 }
