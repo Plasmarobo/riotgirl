@@ -105,20 +105,19 @@ function clearChildren(index, element, rate, remove_parent, eventList)
   {
     case 1: //Element node
       var subnodes = $(element).contents();
-      var recursor = function(element, subnodes){
-        $.each(subnodes, function(index, subelement){
-          clearChildren(index, subelement, rate, true, eventList);
-          if (!element.hasClass("cursor"))
-          {
-            eventList.push({callback: function(){subelement.remove();}, duration: rate});
-          }
-          if ((index === (subnodes.length)) && (remove_parent === true))
-          {
-            eventList.push({callback: function(){element.remove()}, duration: rate});
-          }
-        });
-      };
-      recursor(element, subnodes);
+      $.each(subnodes, function(index, subelement){
+        clearChildren(index, subelement, rate, true, eventList);
+        if (!$(subelement).hasClass("cursor"))
+        {
+          eventList.push({callback: function(){$(subelement).remove();}, duration: rate});
+        }    
+      });
+      if ((remove_parent === true) && (!$(element).hasClass("cursor")))
+      {
+        (function(element){
+          eventList.push({callback: function(){$(element).remove();}, duration: rate});
+        })(element);
+      }
       break;
     case 2: //Attribute node
       //Ignore
@@ -128,7 +127,7 @@ function clearChildren(index, element, rate, remove_parent, eventList)
         element.nodeValue = element.nodeValue.substr(1);
         if (element.nodeValue.length === 0)
         {
-          element.remove();
+          $(element).remove();
         }
         else
         {
@@ -198,7 +197,7 @@ $(document).ready(function(){
     writeLine("Transfering Control", 100);
     writeNewline();
     enqueueWriteDelay(1000);
-    clearConsole(100);
+    clearConsole(10);
     enqueueWriteDelay(1000);
     writeHeading("Welcome to CmdOS", 200);
     writeNewline();
