@@ -24,7 +24,7 @@ var programIndex = {
   'edit' : 'edit.js',
   'virus' : 'virus.js'
 };
-
+var shift_on = false;
 var inBuffer = [];
 var cursorPointer = 0;
 var programHandle = null;
@@ -62,7 +62,7 @@ function sendCommand(string)
   }
   else if ((typeof programIndex[arguments[0]] != 'undefined') && (programIndex[arguments[0]].length))
   {
-    loadProgram(arguments[0]);
+    loadProgram(arguments[0], arguments);
   }
   else
   {
@@ -95,12 +95,19 @@ function parseCommand()
 function loadProgram(name, args)
 {
   writeLine("Loading "+name);
-  pushEvent({callback: function(){
-    $.getScript(binUrl + name, function()
-      {
-        pushEvent({callback: function(){programHandle(args);}, duration: 0});
-      });
-  }, duration: 0});
+  writeNewline();
+  var wrapper = function(args)
+  {
+    pushEvent({callback: function(){
+      $.getScript(binUrl + name + ".js", function()
+        {
+          pushEvent({callback: function(){
+            programHandle(args);
+         }, duration: 0});
+        });
+    }, duration: 0});
+ };
+ wrapper(args);
 };
 
 function exitProgram()
@@ -229,6 +236,8 @@ function handleInput(event)
       inBuffer = [];
       break;
     case keycodes.shift:
+      shift_on = true;
+      break;
     case keycodes.control:
     case keycodes.alt:
     case keycodes.up:
@@ -237,7 +246,12 @@ function handleInput(event)
     default:
       if (inputReady === true)
       {
-        bufferInput(String.fromCharCode(event.which));
+        var char = String.fromCharCode(event.which);
+        if (!shift_on)
+        {
+          char = char.toLowerCase();
+        }
+        bufferInput(char);
       }
       break;
   }
@@ -245,10 +259,19 @@ function handleInput(event)
   return false;
 };
 
+function handleRelease(event)
+{
+  if (event.which == keycodes.shift)
+  {
+    shift_on = false;
+  }
+};
+
 
 function startOS()
 {
   readyInput();
   $(document).keydown(handleInput); 
+  $(document).keyup(handleRelease);
 };
 

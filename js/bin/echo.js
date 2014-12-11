@@ -1,25 +1,18 @@
-function writeEcho(string)
-{
-  writeLine("Echo: " + string, 20);
-  writeNewline();
-  exitProgram();
-};
-
-function executeEcho(arguments)
+programHandle = function(args)
 {
   var string = "";
-  for(var i = 1; i < arguments.length; ++i)
+  for(var i = 1; i < args.length; ++i)
   {
     if (i > 1)
     {
-      string += (arguments[i] + " ");
+      string += (args[i] + " ");
     }
     else
     {
-      string = argument[i];
+      string = args[i];
     }
   }
-  writeEcho(string);
+  writeLine("Echo: " + string, 20);
+  writeNewline();
+  pushEvent({callback: exitProgram, duration: 0});
 };
-
-programHandle = executeEcho;
