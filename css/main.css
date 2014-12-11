@@ -120,7 +120,7 @@ body
 @font-face
 {
   font-family: 'CustomConsole';
-  src: url("/~plasmarobo/font/Silkscreen/slkscr.ttf");
+  src: url("/~plasmarobo/font/kongtext/kongtext.ttf");
 }
 
 .content
@@ -135,5 +135,5 @@ body
   color: #009900;
   overflow-y: auto;
   text-wrap: normal;
-  font-family: "CustomConsole", "Lucinda Console";
+  font-family: "CustomConsole", "Lucinda Console", monospace;
 }

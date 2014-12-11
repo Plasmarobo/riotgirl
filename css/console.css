@@ -2,15 +2,15 @@
 {
   padding: 0;
   margin: 0;
-  min-width:0.5em;
-  min-height:0.7em;
+  width:1em;
+  height:0.9em;
   background-color: #009900;
   display: inline-block;
 }
 
 .blink
 {
-  min-width:0.5em;
-  min-height:0.7em;
+  width:1em;
+  height:0.9em;
   background-color: #003300;
 }

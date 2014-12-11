@@ -217,46 +217,28 @@ $(document).ready(function(){
   stdout.append(cursor);
   blinkCursor(true, cursorBlinkRate);
   setTimeout(function(){
-    writeLine("Checking Memory", 100);
+    writeLine("Memory 64K . . . OK", 100);
     writeNewline();
-    for (var y = 0; y < 8; ++y)
-    {
-      writeLine("Block "+y+" ", 50);
-      writeField("Memblock" + y, "0x00", 50);
-      writeLine("/0xFF", 50);
-      writeNewline();
-    }
-    for(var y = 0; y < 8; ++y)
-    {
-      for(var i = 15; i < 256; i += 16)
-      {
-        updateField("Memblock"+y, "0x" + i.toString(16), 10);
-      }
-    }
-    writeNewline();
-    writeLine("OK", 100);
-    clearConsole(10);
-    writeLine("Booting OS:", 100);
-    writeLine(" . . . ", 750);
+    writeLine("==Booting OS 3.0.1==", 100);
     writeNewline();
     $.each([
-      "kernel.exe", 
-      "inproc.exe", 
+      "krnel.exe", 
+      "iproc.exe", 
       "logon.exe", 
-      "Setup USERENV", 
-      "net.exe"
+      "virus.exe", 
+      "netcn.exe",
+      "files.exe",
       ], function(i, txt){
       writeLine(txt, 100);
-      writeLine(" . . . ", 250);
+      writeLine(" . . . ", 50);
       writeLine("OK", 100);
       writeNewline();
     });
     enqueueWriteDelay(1000);
-    clearConsole(10);
+    clearConsole(2);
     enqueueWriteDelay(1000);
     writeHeading("Welcome to CmdOS", 10);
     writeNewline();
-    writeLine(">", 100);
-    startOS();
+    pushEvent({callback:function(){startOS();}, duration: 0});
   }, 500);
 });
