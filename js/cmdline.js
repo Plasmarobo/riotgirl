@@ -189,6 +189,15 @@ function clearConsole(rate)
   }, rate);
 };
 
+function fastClear()
+{
+  enqueueWriteEvent(function(){
+    var cur = $('.cursor').detach();
+    $('.content').html("");
+    $('.content').append(cur);
+   }, 0);
+};
+
 function blinkCursor(on, rate)
 {
   if (on === true)

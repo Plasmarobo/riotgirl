@@ -134,6 +134,8 @@ body
   background-color: #003300;
   color: #009900;
   overflow-y: auto;
-  text-wrap: normal;
+  overflow-x: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   font-family: "CustomConsole", "Lucinda Console", monospace;
 }
