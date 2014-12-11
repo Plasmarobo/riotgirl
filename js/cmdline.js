@@ -217,21 +217,18 @@ $(document).ready(function(){
   stdout.append(cursor);
   blinkCursor(true, cursorBlinkRate);
   setTimeout(function(){
-    writeLine("Memory 64K . . . OK", 100);
+    writeLine("Memory 64K . . . OK", 50);
     writeNewline();
-    writeLine("==Booting OS 3.0.1==", 100);
+    writeLine("==Booting OS 3.0.1==", 50);
     writeNewline();
     $.each([
       "krnel.exe", 
-      "iproc.exe", 
       "logon.exe", 
       "virus.exe", 
-      "netcn.exe",
-      "files.exe",
       ], function(i, txt){
-      writeLine(txt, 100);
+      writeLine(txt, 50);
       writeLine(" . . . ", 50);
-      writeLine("OK", 100);
+      writeLine("OK", 50);
       writeNewline();
     });
     enqueueWriteDelay(1000);

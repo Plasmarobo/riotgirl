@@ -10,11 +10,24 @@ var keycodes = {
   up: 38,
   right: 39,
   down: 40,
-  delete: 46
+  delete: 46,
+  space: 32
+};
+var binUrl = '/~plasmarobo/js/bin/';
+var arguments = [];
+var programIndex = {
+  'echo' : 'echo.js',
+  'adventure' : 'adventure.js',
+  'ls' : 'ls.js',
+  'mkdir' : 'mkdir.js',
+  'rm' : 'rm.js',
+  'edit' : 'edit.js',
+  'virus' : 'virus.js'
 };
 
 var inBuffer = [];
 var cursorPointer = 0;
+var programHandle = null;
 
 function readyInput()
 {
@@ -36,8 +49,63 @@ function sendCommand(string)
   $('#inBuffer').remove();
   insertAtCursor(buffer);
   writeNewline();
-  writeLine("Echo: " + string, 20);
-  writeNewline();
+  // Parse arguments
+  arguments = [];
+  arguments = parseCommand();
+  if (arguments.length == 0)
+  {
+    arguments.push("NULL");
+  }
+  if (programHandle != null)
+  {
+    programHandle(arguments);
+  }
+  else if ((typeof programIndex[arguments[0]] != 'undefined') && (programIndex[arguments[0]].length))
+  {
+    loadProgram(arguments[0]);
+  }
+  else
+  {
+    writeLine("Could not find program: " + arguments[0], 20);
+    writeNewline();
+    pushEvent({callback: function(){readyInput();}, duration: 0});
+  }
+};
+
+function parseCommand()
+{
+  var args = [];
+  var collector = "";
+  for(var i = 0; i < inBuffer.length; ++i)
+  {
+    if (inBuffer[i] == " ")
+    {
+      args.push(collector);
+      collector = "";
+    }
+    else
+    {
+      collector += inBuffer[i];
+    }
+  }
+  args.push(collector);
+  return args;
+}
+
+function loadProgram(name, args)
+{
+  writeLine("Loading "+name);
+  pushEvent({callback: function(){
+    $.getScript(binUrl + name, function()
+      {
+        pushEvent({callback: function(){programHandle(args);}, duration: 0});
+      });
+  }, duration: 0});
+};
+
+function exitProgram()
+{
+  programHandle = null;
   pushEvent({callback: function(){readyInput();}, duration: 0});
 };
 
@@ -135,8 +203,6 @@ function regressCursor()
 
 function handleInput(event)
 {
-  event.preventDefault();
-  //defaultPrevented = true;
   switch(event.which)
   {
     case keycodes.backspace:
@@ -175,6 +241,7 @@ function handleInput(event)
       }
       break;
   }
+  event.preventDefault();
   return false;
 };
 
@@ -182,6 +249,6 @@ function handleInput(event)
 function startOS()
 {
   readyInput();
-  $(document).keyup(handleInput);
+  $(document).keydown(handleInput); 
 };
 
