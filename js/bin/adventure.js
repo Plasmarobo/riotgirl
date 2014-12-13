@@ -29,6 +29,15 @@ function roll(min, max)
   return (Math.floor(Math.random()) % (max - min)) + min;
 };
 
+function findTargetByName(name)
+{
+  //BFS current room, then inventory - resolve conflicts
+  if (name == "room")
+  {
+    examine(currentRoom());
+  }
+};
+
 function examine(target)
 {
   readDescription(target.description);
@@ -43,9 +52,9 @@ function examine(target)
     }
     writeLine("Contains:", 20);
     writeNewline();
-    for(var thing in target.contains)
+    for(var i = 0; i < target.contains.length; ++i)
     {
-      writeLine(thing, 20);
+      writeLine(target.contains[i].name, 20);
       writeNewline();
     }
   }
@@ -59,10 +68,12 @@ function examine(target)
 var doors =
 {
   "none" : {
+    name: "none",
     description: ["No door"],
     actions : {}
   },
   "iron gate" : {
+    name: "none",
     description: ["An iron gate"],
     actions: {
       open: {description: ["The gate swings open easily"]},
@@ -79,6 +90,7 @@ var doors =
 
 var items = {
   "bucket" : {
+    name: "bucket",
     description: ["A metal bucket"],
     type: ["container"],
     needscontainer: false,
@@ -86,6 +98,7 @@ var items = {
     contains: []
   },
   "water" : {
+    name: "water",
     description: ["Clear water"],
     type: ["consumable"],
     needscontainer: true,
@@ -125,6 +138,7 @@ function dropItem()
 var features =
 {
   "fountain" : {
+    name: "fountain",
     description: ["A fountain burbles quietly"],
     contains: [],
     actions: {
@@ -185,6 +199,7 @@ function performAction(target, name)
 var rooms =
 {
   "dead garden" : {
+    name: "dead garden",
     description: ["The room is a very small baren garden with very high stone walls.",
                  "A fountain burbles gently in the center of the garden.",
                  "It is quite cold."],
@@ -192,6 +207,7 @@ var rooms =
     contains: [features["fountain"]],
   },
   "hedge maze" : {
+    name: "hedge maze",
     description: ["A hedge maze"],
     south: {door: doors["iron gate"], room: "dead garden"},
   },
@@ -345,8 +361,19 @@ var adventure = function(args)
       writeNewline();
       programHandle = newAdventure;
       break;
+    case 'examine':
+      if((typeof args[1] != 'undefined') && (args[1].length))
+      {
+        examine(findTargetByName(args[1]))
+      }
+      else
+      {
+        writeLine("Examine what?", 20);
+        writeNewline();
+      }
+      break;
     default:
-      writeLine("Sorry, I don't work yet...", 20);
+      writeLine("You cannot " + args[0], 20);
       writeNewline();
       break;
   }
