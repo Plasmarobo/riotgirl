@@ -13,7 +13,9 @@ var keycodes = {
   delete: 46,
   space: 32
 };
+
 var binUrl = '/~plasmarobo/js/bin/';
+
 var arguments = [];
 var programIndex = {
   'echo' : 'echo.js',
@@ -99,11 +101,15 @@ function loadProgram(name, args)
   var wrapper = function(args)
   {
     pushEvent({callback: function(){
-      $.getScript(binUrl + name + ".js", function()
+      $.getScript(binUrl + name + ".js").done(function()
         {
           pushEvent({callback: function(){
             programHandle(args);
          }, duration: 0});
+        }).fail(function(jqxhr, settings, exception) {
+          writeLine("Critical Failure!", 20);
+          writeNewline();
+          pushEvent({callback: readyInput, duration: 0});
         });
     }, duration: 0});
  };
