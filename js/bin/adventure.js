@@ -29,20 +29,83 @@ function roll(min, max)
   return (Math.floor(Math.random()) % (max - min)) + min;
 };
 
+function parseIndex(string)
+{
+  if(/^([0-9]+|Infinity)$/.test(string))
+  {
+    return Number(string);
+  }
+  else
+  {
+    return NaN;
+  }
+};
+
 function findTargetByName(name)
 {
   //BFS current room, then inventory - resolve conflicts
   if (name == "room")
   {
     examine(currentRoom());
+    return;
+  }
+  var candidates = [];
+  //The room might contain this item
+  for(var i = 0; i < room.contains.length; ++i)
+  {
+    if (name == room.contains[i].name)
+    {
+      candidates.push({in: "room", item: room.contains[i]});
+    }
+  }
+  for(var item in currentAdventure.inventory)
+  {
+    if (name == item)
+    {
+      candidates.push({in: "inventory", item: currentAventure.inventory[item]});
+    }
+  }
+  if (conflicts.length > 1)
+  { 
+    for(var i = 0; i < conflicts.length; ++i)
+    {
+      writeLine(i + " - " + conflicts[i]["item"].name + " (in " + conflicts[i]["in"] + ")", 20);
+      writeNewline();
+    }
+    var resolveConflict = function(list, arg)
+    {
+       var index = parseIndex(arg);
+       if ((index != NaN) &&(index < list.length))
+       {
+         examine(list[index]["item"]);
+       }
+       else
+       {
+         writeLine("Not a valid choice");
+         writeNewline();
+       }
+       programHandle = adventure;
+       pushEvent({callback: readyInput, duration: 0});
+    }
+    
+    programHandle = function(arg){
+      resolveConflict(list, arg);
+    };
+  }
+  else if (conflicts.length == 1)
+  {
+    examine(conflicts[0].item);
+  }
+  else
+  {
+    writeLine("You try to remember what the " + name + " looked like", 20);
+    writeNewline();
   }
 };
 
 function examine(target)
 {
   readDescription(target.description);
-  writeLine("Responds to:", 20);
-  writeNewline();
   if (typeof target.contains != 'undefined')
   {
     if (typeof target.storage != 'undefined')
@@ -58,6 +121,8 @@ function examine(target)
       writeNewline();
     }
   }
+  writeLine("Responds to:", 20);
+  writeNewline();
   for(var action in target.actions)
   {
     writeLine(action, 20);
