@@ -1,4 +1,4 @@
-\var adventureHelp = {
+var adventureHelp = {
   'quit': 'Exit adventure',
   'help': 'This menu',
   'go': 'Move in a direction (go north)',
@@ -267,47 +267,8 @@ var features =
   }   
 };
 
-function interact(args)
+function performAction(target, name)
 {
-  var action = actionFactory(args);
-  if (action.error_msg != null)
-  {
-    writeLine(action.error_msg);
-    writeNewline();
-  }
-  else
-  {
-    var do_something = function(target, verb, selectors)
-    {
-      if (target.hasOwnProperty("actions")
-      {
-        if (target.actions.hasOwnProperty(verb))
-        {
-          (target.actions["verb"])(selectors);
-        }
-        else
-        {
-        }
-      }
-      else
-      {
-        writeLine(target.name + " does not react in any way.");
-        writeNewline();
-      }
-    };
-
-    if (action.subject == null)
-    {
-      action.subject = "room";
-    }
-    var wrapper = function(target, callback, verb, selectors)
-    {
-      findTargetByName(subject, function(target){callback(target,verb, selectors);});
-    };
-    wrapper(action.subject, do_something, action.verb, action.selectors);
-    
-  }
-  pushEvent({callback: readyInput, duration: 0});
 };
 
 var rooms =
@@ -341,58 +302,20 @@ function currentRoom()
   return rooms[currentAdventure.room];
 };
 
-function actionFactory(args)
+function interact(args)
 {
-  // Do X on Y with Z
-  // Do X to Y using Z
-  var associations = {
-    "with"  : "next",
-    "using" : "next",
-    "on"    : "prev",
-    "in",   : "prev",
-    "from"  : "prev",
-    "into"  : "prev",
-    "over"  : "next",
-    "under" : "next"
-  };
-  var verb = args.shift();
-  var subject = null;
-  if (args.length > 0)
-  {
-    subject = args.shift();
-  }
-  var construct = {verb: verb, subject: subject, selectors: [], error_msg = null};
-  var token = null;
-  var next_token = null;
-  while(args.length > 0)
-  {
-    token = args.shift();
-    if (args.length > 0)
-    {
-      next_token = args.shift();
-    }
-    if (next_token == null)
-    {
-      return construct;
-    }
+  var ignore = [
+    "from",
+    "to",
+    "with",
+    "at",
     
-    if (associations.hasOwnProperty(token))
-    {
-      if (associations[token] == "next")
-      {
-        construct.selectors.push({token: token, target: next_token});
-      }
-      else
-      {
-      }
-    }
-    else
-    {
-      construct.error_msg = "Could not understand " + token + ", try 'help'";
-      return construct;
-    }
-  }
-  return construct;
+  ];
+  //Verb arg 0
+  
+  //find target
+
+  //find 
 };
 
 var newAdventure = function(args)

@@ -270,43 +270,40 @@ var features =
 function interact(args)
 {
   var action = actionFactory(args);
-  if (action.error_msg != null)
+  if (action.error_msg == null)
   {
     writeLine(action.error_msg);
     writeNewline();
   }
   else
   {
-    var do_something = function(target, verb, selectors)
+    var do_action = function(target, verb, selectors)
     {
-      if (target.hasOwnProperty("actions")
+      if (target.actions.hasOwnProperty(verb))
       {
-        if (target.actions.hasOwnProperty(verb))
+        for(var selector in selectors)
         {
-          (target.actions["verb"])(selectors);
-        }
-        else
-        {
+          var 
         }
       }
       else
       {
-        writeLine(target.name + " does not react in any way.");
+        writeLine(target.name + " does not respond to '" + verb + "', try 'examine " + target.name + "'");
         writeNewline();
       }
-    };
+    }
 
     if (action.subject == null)
     {
       action.subject = "room";
     }
-    var wrapper = function(target, callback, verb, selectors)
+    findTargetByName(action.subject, function(target)
     {
-      findTargetByName(subject, function(target){callback(target,verb, selectors);});
-    };
-    wrapper(action.subject, do_something, action.verb, action.selectors);
+      do_action(target, action.verb, action.selectors);
+    });
     
   }
+  //Operations SHOULD be blocking, revisit this if not
   pushEvent({callback: readyInput, duration: 0});
 };
 
@@ -348,10 +345,9 @@ function actionFactory(args)
   var associations = {
     "with"  : "next",
     "using" : "next",
-    "on"    : "prev",
-    "in",   : "prev",
-    "from"  : "prev",
-    "into"  : "prev",
+    "on"    : "next",
+    "from"  : "next",
+    "into"  : "next",
     "over"  : "next",
     "under" : "next"
   };
@@ -381,9 +377,6 @@ function actionFactory(args)
       if (associations[token] == "next")
       {
         construct.selectors.push({token: token, target: next_token});
-      }
-      else
-      {
       }
     }
     else
