@@ -181,7 +181,7 @@ var items = {
   } 
 };
 
-function selectItem(message)
+function selectItem(message, callback)
 {
 };
 
@@ -219,8 +219,25 @@ var features =
     actions: {
       take: {
         description: ["You kneel by the fountain"],
-        callback: function(){
-          var item = selectContainer("Which item will you store water in?");
+        callback: function(selectors){
+          // Look for a "with" condition
+          
+          var item = null;
+          if(selectors.length > 0)
+          {
+            while(selectors[0].token != "with")
+            {
+              selectors.shift();
+            }
+            if(selectors.length > 0)
+            {
+              item = selectors[0].target;
+            }
+          }
+          if (item == null)
+          {
+            item = selectContainer("Which item will you store water in?");
+          }
           if (item != "")
           {
             if (hasOpenSlot(items[item]))
@@ -247,14 +264,22 @@ var features =
       },
       throw: {
         description: ["You wind up..."],
-        callback: function(){
-          var item = selectItem("Which item will you throw?");
+        callback: function(selectors){
+          var item = null;
+	  if(selectors.length == 0)
+          {
+            item = selectItem("Which item will you throw?", this);
+          }
+          else
+          {
+            item = selectors[0].target;
+          }
           if (item != "")
           {
             writeLine("and throw the " + item + " into the fountain");
             writeNewline();
-            features["fountain"].contains.push(items[name]);
-            delete currentAdventure.inventory[name];
+            features["fountain"].contains.push(items[item]);
+            delete currentAdventure.inventory[item];
           }
           else
           {
@@ -270,43 +295,38 @@ var features =
 function interact(args)
 {
   var action = actionFactory(args);
-  if (action.error_msg != null)
+  var do_something = function(target, verb, selectors)
   {
-    writeLine(action.error_msg);
-    writeNewline();
-  }
-  else
-  {
-    var do_something = function(target, verb, selectors)
+    if (target.hasOwnProperty("actions")
     {
-      if (target.hasOwnProperty("actions")
+      if (target.actions.hasOwnProperty(verb))
       {
-        if (target.actions.hasOwnProperty(verb))
-        {
-          (target.actions["verb"])(selectors);
-        }
-        else
-        {
-        }
+        (target.actions[verb])(selectors);
       }
       else
       {
-        writeLine(target.name + " does not react in any way.");
+        writeLine(target.name + " does not respond to " + verb, 20);
+        writeNewline();
+        writeLine("try 'examine " + target.name + "'");
         writeNewline();
       }
-    };
-
-    if (action.subject == null)
-    {
-      action.subject = "room";
     }
-    var wrapper = function(target, callback, verb, selectors)
+    else
     {
-      findTargetByName(subject, function(target){callback(target,verb, selectors);});
-    };
-    wrapper(action.subject, do_something, action.verb, action.selectors);
-    
+      writeLine(target.name + " does not react in any way.");
+      writeNewline();
+    }
+  };
+
+  if (action.subject == null)
+  {
+    action.subject = "room";
   }
+  var wrapper = function(target, callback, verb, selectors)
+  {
+    findTargetByName(subject, function(target){callback(target,verb, selectors);});
+  };
+  wrapper(action.subject, do_something, action.verb, action.selectors);
   pushEvent({callback: readyInput, duration: 0});
 };
 
@@ -356,43 +376,48 @@ function actionFactory(args)
     "under" : "next"
   };
   var verb = args.shift();
-  var subject = null;
-  if (args.length > 0)
-  {
-    subject = args.shift();
-  }
-  var construct = {verb: verb, subject: subject, selectors: [], error_msg = null};
-  var token = null;
+  
+  var token = null; 
   var next_token = null;
+  var subject = null;
+  var selectors = [];
   while(args.length > 0)
   {
-    token = args.shift();
-    if (args.length > 0)
+    token = args.pop();
+    if(!associations.hasOwnProperty(token))
     {
-      next_token = args.shift();
-    }
-    if (next_token == null)
-    {
-      return construct;
-    }
-    
-    if (associations.hasOwnProperty(token))
-    {
-      if (associations[token] == "next")
-      {
-        construct.selectors.push({token: token, target: next_token});
-      }
-      else
-      {
-      }
+      next_token = token;
+      subject = token;
+      continue;
     }
     else
     {
-      construct.error_msg = "Could not understand " + token + ", try 'help'";
-      return construct;
+      if(associations[token] == "next")
+      {
+        if (next_token != null)
+        {
+          selectors.push({token: token, target: next_token});
+        }
+        else
+        {
+          continue;
+        }
+      }
+      else if(associations[token] == "prev")
+      {
+        if (args.length > 0)
+        {
+          selectors.push({token: token, target: args.pop()});
+        }
+        else
+        {
+          selectors.push({token: token, target: "default"});
+        }
+      }
     }
+
   }
-  return construct;
+  return {verb: verb, subject: subject, selectors: selectors};
 };
 
 var newAdventure = function(args)
